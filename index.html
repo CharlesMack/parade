@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SnapFrame Parade - The Ultimate Festive Celebration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        /* Base app styling */
+        body {
+            background: #1e1e1e;
+            color: #f0f0f0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #camera-feed-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: contrast(1.1) saturate(1.2);
+            transform: scale(1.05);
+        }
+
+        /* --- Enhanced Parade Styles --- */
+        #parade-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+        
+        .parade-media {
+            position: absolute;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            object-fit: cover;
+            cursor: pointer;
+            pointer-events: auto;
+            user-select: none;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .parade-media:hover {
+            transform: scale(1.1) !important;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6) !important;
+            z-index: 100 !important;
+        }
+
+        .parade-media.dragging {
+            z-index: 1000 !important;
+            transform: scale(1.2) rotate(10deg) !important;
+            box-shadow: 0 15px 40px rgba(255, 77, 77, 0.8) !important;
+        }
+        
+        /* Enhanced confetti explosion animations */
+        @keyframes confetti-top {
+            0% { 
+                transform: translate(-50%, -100vh) rotate(0deg) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1);
+            }
+            100% {
+                transform: translate(var(--x-end), var(--y-end)) rotate(var(--r-end)) scale(0.8);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes confetti-bottom {
+            0% { 
+                transform: translate(-50%, 100vh) rotate(0deg) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1);
+            }
+            100% {
+                transform: translate(var(--x-end), var(--y-end)) rotate(var(--r-end)) scale(0.8);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes confetti-left {
+            0% { 
+                transform: translate(-100vw, -50%) rotate(0deg) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1);
+            }
+            100% {
+                transform: translate(var(--x-end), var(--y-end)) rotate(var(--r-end)) scale(0.8);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes confetti-right {
+            0% { 
+                transform: translate(100vw, -50%) rotate(0deg) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1);
+            }
+            100% {
+                transform: translate(var(--x-end), var(--y-end)) rotate(var(--r-end)) scale(0.8);
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes center-explosion {
+            0% { 
+                transform: translate(-50%, -50%) rotate(0deg) scale(0);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+                transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(1.2);
+            }
+            100% {
+                transform: translate(var(--x-end), var(--y-end)) rotate(var(--r-end)) scale(0.9);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes float-persistent {
+            0%, 100% {
+                transform: translate(var(--float-x), var(--float-y)) rotate(var(--float-r)) scale(var(--float-scale));
+            }
+            50% {
+                transform: translate(calc(var(--float-x) + var(--drift-x)), calc(var(--float-y) + var(--drift-y))) rotate(calc(var(--float-r) + var(--drift-r))) scale(var(--float-scale));
+            }
+        }
+        
+        /* --- Controls & UI --- */
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        #shutter-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f, #4d79ff);
+            background-size: 300% 300%;
+            animation: rainbow 3s ease infinite;
+            border: 8px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #shutter-button:active {
+            transform: scale(0.9);
+            border-width: 4px;
+        }
+        
+        #shutter-button.recording {
+            background: #ff4d4d;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+        }
+
+        #status-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            z-index: 10;
+            font-size: 1.1rem;
+        }
+
+        .flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,215,0,0.8) 50%, rgba(255,77,77,0.6) 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s ease-out;
+        }
+
+        #recording-timer {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: #ff4d4d;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .toggle:before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #fff;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        input[type="checkbox"]:checked + .toggle {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+        }
+
+        input[type="checkbox"]:checked + .toggle:before {
+            transform: translateX(20px);
+        }
+
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        #media-counter {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffd93d;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div id="camera-feed-container">
+            <video id="camera-feed" playsinline autoplay muted></video>
+            <div id="parade-container"></div>
+            <div id="status-message"></div>
+            <div id="flash-overlay" class="flash-overlay"></div>
+            <div id="recording-timer">00:00</div>
+            <div id="media-counter">Media: 0</div>
+        </div>
+        <div id="controls">
+            <button id="shutter-button" aria-label="Capture"></button>
+            <div class="toggle-container">
+                <label for="persist-rec-toggle">Persist Rec</label>
+                <input type="checkbox" id="persist-rec-toggle" />
+                <label for="persist-rec-toggle" class="toggle"></label>
+            </div>
+            <div class="toggle-container">
+                <label for="parade-screensaver-toggle">🎉 Parade Forever</label>
+                <input type="checkbox" id="parade-screensaver-toggle" />
+                <label for="parade-screensaver-toggle" class="toggle"></label>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const video = document.getElementById('camera-feed');
+        const shutterButton = document.getElementById('shutter-button');
+        const statusMessage = document.getElementById('status-message');
+        const flashOverlay = document.getElementById('flash-overlay');
+        const recordingTimer = document.getElementById('recording-timer');
+        const persistRecToggle = document.getElementById('persist-rec-toggle');
+        const paradeScreensaverToggle = document.getElementById('parade-screensaver-toggle');
+        const paradeContainer = document.getElementById('parade-container');
+        const mediaCounter = document.getElementById('media-counter');
+        
+        let mediaRecorder;
+        let recordedChunks = [];
+        let timerInterval;
+        let startTime;
+        let isRecording = false;
+        let pressTimer;
+        let mediaCount = 0;
+        let draggedElement = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        const longPressThreshold = 500;
+
+        // Show a temporary message with celebration
+        function showStatus(text) {
+            statusMessage.textContent = `🎊 ${text} 🎊`;
+            statusMessage.style.opacity = 1;
+            setTimeout(() => {
+                statusMessage.style.opacity = 0;
+            }, 2000);
+        }
+
+        // Enhanced flash with celebration colors
+        function celebrationFlash() {
+            flashOverlay.style.opacity = 1;
+            setTimeout(() => {
+                flashOverlay.style.opacity = 0;
+            }, 200);
+        }
+
+        // Update media counter
+        function updateMediaCounter() {
+            mediaCounter.textContent = `Media: ${mediaCount}`;
+        }
+
+        // SnapFrame Engine: Real-time visual processing
+        function applyEngineFilters() {
+            video.style.filter = `contrast(1.15) saturate(1.3) brightness(1.05)`;
+        }
+
+        // Start the camera feed with audio
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment', width: 1920, height: 1080 }, 
+                    audio: true 
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    applyEngineFilters();
+                    showStatus("🚀 SnapFrame Parade is LIVE!");
+                };
+            } catch (err) {
+                console.error("Error accessing the camera: ", err);
+                showStatus("❌ Camera access denied.");
+            }
+        }
+
+        // Enhanced floating media with multiple launch patterns
+        function createFloatingMedia(source, isVideo, delayMs = 0) {
+            setTimeout(() => {
+                const mediaElement = document.createElement(isVideo ? 'video' : 'img');
+                mediaElement.src = source;
+                mediaElement.classList.add('parade-media');
+                
+                // Random sizes and properties
+                const randomSize = Math.floor(Math.random() * (300 - 100) + 100);
+                const aspectRatio = isVideo ? (video.videoHeight / video.videoWidth) : 1;
+                
+                mediaElement.style.width = `${randomSize}px`;
+                mediaElement.style.height = `${randomSize * aspectRatio}px`;
+                
+                // Choose random launch direction
+                const directions = ['top', 'bottom', 'left', 'right', 'center'];
+                const direction = directions[Math.floor(Math.random() * directions.length)];
+                
+                // Set initial position based on direction
+                switch (direction) {
+                    case 'top':
+                        mediaElement.style.left = '50%';
+                        mediaElement.style.top = '-200px';
+                        break;
+                    case 'bottom':
+                        mediaElement.style.left = '50%';
+                        mediaElement.style.bottom = '-200px';
+                        break;
+                    case 'left':
+                        mediaElement.style.left = '-200px';
+                        mediaElement.style.top = '50%';
+                        break;
+                    case 'right':
+                        mediaElement.style.right = '-200px';
+                        mediaElement.style.top = '50%';
+                        break;
+                    case 'center':
+                        mediaElement.style.left = '50%';
+                        mediaElement.style.top = '50%';
+                        break;
+                }
+                
+                // Set CSS variables for animation
+                const randomX = (Math.random() - 0.5) * window.innerWidth * 0.8;
+                const randomY = (Math.random() - 0.5) * window.innerHeight * 0.8;
+                const randomRotation = Math.floor(Math.random() * 720) - 360;
+                const randomEndX = (Math.random() - 0.5) * window.innerWidth;
+                const randomEndY = (Math.random() - 0.5) * window.innerHeight;
+                const randomEndRotation = Math.floor(Math.random() * 1080) - 540;
+                
+                mediaElement.style.setProperty('--x', `${randomX}px`);
+                mediaElement.style.setProperty('--y', `${randomY}px`);
+                mediaElement.style.setProperty('--r', `${randomRotation}deg`);
+                mediaElement.style.setProperty('--x-end', `${randomEndX}px`);
+                mediaElement.style.setProperty('--y-end', `${randomEndY}px`);
+                mediaElement.style.setProperty('--r-end', `${randomEndRotation}deg`);
+
+                // Apply direction-based animation
+                const duration = Math.random() * 5 + 8; // 8-13 seconds
+                mediaElement.style.animation = `confetti-${direction} ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`;
+
+                if (isVideo) {
+                    mediaElement.muted = true;
+                    mediaElement.loop = true;
+                    mediaElement.playsinline = true;
+                    mediaElement.playbackRate = Math.random() * (1.8 - 0.6) + 0.6;
+                    
+                    // Load and play video
+                    mediaElement.addEventListener('loadeddata', () => {
+                        mediaElement.play().catch(e => console.log('Video play failed:', e));
+                    });
+                    
+                    // Click to toggle sound with visual feedback
+                    mediaElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        mediaElement.muted = !mediaElement.muted;
+                        if (!mediaElement.muted) {
+                            mediaElement.style.boxShadow = '0 0 25px #ff4d4d, 0 0 50px #ff4d4d';
+                            setTimeout(() => {
+                                if (mediaElement.muted) {
+                                    mediaElement.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.5)';
+                                }
+                            }, 3000);
+                        } else {
+                            mediaElement.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.5)';
+                        }
+                    });
+                }
+
+                // Add drag functionality
+                addDragFunctionality(mediaElement);
+                
+                paradeContainer.appendChild(mediaElement);
+                mediaCount++;
+                updateMediaCounter();
+
+                // Handle persistence based on screensaver mode
+                if (!paradeScreensaverToggle.checked) {
+                    setTimeout(() => {
+                        if (mediaElement.parentNode) {
+                            mediaElement.remove();
+                            mediaCount = Math.max(0, mediaCount - 1);
+                            updateMediaCounter();
+                        }
+                    }, duration * 1000 + 2000);
+                } else {
+                    // Convert to persistent floating animation after initial animation
+                    setTimeout(() => {
+                        convertToPersistentFloat(mediaElement);
+                    }, duration * 1000);
+                }
+            }, delayMs);
+        }
+
+        // Convert media to persistent floating mode
+        function convertToPersistentFloat(mediaElement) {
+            if (!mediaElement.parentNode) return;
+            
+            // Set random floating position
+            const floatX = Math.random() * (window.innerWidth - 200);
+            const floatY = Math.random() * (window.innerHeight - 200);
+            const floatR = Math.random() * 360;
+            const floatScale = Math.random() * 0.4 + 0.6; // 0.6-1.0
+            
+            const driftX = (Math.random() - 0.5) * 100;
+            const driftY = (Math.random() - 0.5) * 100;
+            const driftR = (Math.random() - 0.5) * 45;
+            
+            mediaElement.style.setProperty('--float-x', `${floatX}px`);
+            mediaElement.style.setProperty('--float-y', `${floatY}px`);
+            mediaElement.style.setProperty('--float-r', `${floatR}deg`);
+            mediaElement.style.setProperty('--float-scale', floatScale);
+            mediaElement.style.setProperty('--drift-x', `${driftX}px`);
+            mediaElement.style.setProperty('--drift-y', `${driftY}px`);
+            mediaElement.style.setProperty('--drift-r', `${driftR}deg`);
+            
+            const floatDuration = Math.random() * 10 + 15; // 15-25 seconds
+            mediaElement.style.animation = `float-persistent ${floatDuration}s ease-in-out infinite`;
+        }
+
+        // Add drag functionality to media elements
+        function addDragFunctionality(element) {
+            let isDragging = false;
+            
+            // Mouse events
+            element.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+            
+            // Touch events
+            element.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                startDrag({clientX: touch.clientX, clientY: touch.clientY, target: e.target});
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    drag({clientX: touch.clientX, clientY: touch.clientY});
+                }
+            });
+            
+            document.addEventListener('touchend', endDrag);
+            
+            function startDrag(e) {
+                if (e.target === element) {
+                    isDragging = true;
+                    draggedElement = element;
+                    element.classList.add('dragging');
+                    
+                    const rect = element.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    
+                    // Pause animations while dragging
+                    element.style.animationPlayState = 'paused';
+                }
+            }
+            
+            function drag(e) {
+                if (isDragging && draggedElement === element) {
+                    const x = e.clientX - dragOffset.x;
+                    const y = e.clientY - dragOffset.y;
+                    
+                    element.style.left = `${x}px`;
+                    element.style.top = `${y}px`;
+                    element.style.transform = 'scale(1.2) rotate(10deg)';
+                }
+            }
+            
+            function endDrag() {
+                if (isDragging && draggedElement === element) {
+                    isDragging = false;
+                    draggedElement = null;
+                    element.classList.remove('dragging');
+                    
+                    // Resume animation or set new floating position
+                    if (paradeScreensaverToggle.checked) {
+                        element.style.animationPlayState = 'running';
+                    }
+                }
+            }
+        }
+
+        // Launch confetti burst - multiple media at once
+        function launchConfettiBurst() {
+            const burstCount = Math.floor(Math.random() * 3) + 2; // 2-4 items
+            for (let i = 0; i < burstCount; i++) {
+                // Create dummy media for burst effect
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.filter = window.getComputedStyle(video).filter;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageDataURL = canvas.toDataURL('image/png');
+                
+                createFloatingMedia(imageDataURL, false, i * 200); // Stagger launches
+            }
+        }
+
+        // Capture and download logic for a single photo
+        function captureAndDownload() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            
+            celebrationFlash();
+            
+            context.filter = window.getComputedStyle(video).filter;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageDataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `snapframe_celebration_${Date.now()}.png`;
+            link.href = imageDataURL;
+            link.click();
+            
+            showStatus("🎯 SHOT FIRED!");
+            createFloatingMedia(imageDataURL, false);
+        }
+
+        // Video recording functions with enhanced features
+        function startRecording() {
+            if (isRecording) return;
+            isRecording = true;
+            shutterButton.classList.add('recording');
+            recordedChunks = [];
+            const stream = video.srcObject;
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm;codecs=vp9',
+                videoBitsPerSecond: 8000000
+            });
+            
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `snapframe_parade_${Date.now()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // 5 second delay for video launch
+                showStatus("🎬 Video launching in 5 seconds...");
+                setTimeout(() => {
+                    createFloatingMedia(url, true);
+                    showStatus("🚀 VIDEO LAUNCHED!");
+                }, 5000);
+                
+                window.URL.revokeObjectURL(url);
+            };
+            
+            mediaRecorder.start();
+            showStatus("🔴 RECORDING PARADE!");
+            
+            startTime = Date.now();
+            recordingTimer.style.opacity = 1;
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopRecording() {
+            if (!isRecording) return;
+            isRecording = false;
+            shutterButton.classList.remove('recording');
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            showStatus("🎬 Recording stopped! Video processing...");
+            clearInterval(timerInterval);
+            recordingTimer.style.opacity = 0;
+            recordingTimer.textContent = '00:00';
+        }
+
+        function updateTimer() {
+            const elapsedTime = Date.now() - startTime;
+            const totalSeconds = Math.floor(elapsedTime / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            recordingTimer.textContent = `🔴 ${formattedTime}`;
+        }
+
+        // Enhanced event listeners
+        shutterButton.addEventListener('mousedown', () => {
+            if (isRecording) {
+                if (persistRecToggle.checked) {
+                    stopRecording();
+                }
+            } else {
+                if (persistRecToggle.checked) {
+                    startRecording();
+                } else {
+                    pressTimer = setTimeout(() => {
+                        startRecording();
+                    }, longPressThreshold);
+                }
+            }
+        });
+
+        shutterButton.addEventListener('mouseup', () => {
+            if (persistRecToggle.checked) {
+                // Do nothing on mouseup in persistent mode
+            } else {
+                clearTimeout(pressTimer);
+                if (isRecording) {
+                    stopRecording();
+                } else {
+                    captureAndDownload();
+                    // Launch additional confetti burst on photo capture
+                    setTimeout(() => launchConfettiBurst(), 500);
+                }
+            }
+        });
+
+        shutterButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (persistRecToggle.checked) {
+                if (isRecording) {
+                    stopRecording();
+                } else {
+                    startRecording();
+                }
+            } else {
+                pressTimer = setTimeout(() => {
+                    startRecording();
+                }, longPressThreshold);
+            }
+        });
+
+        shutterButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (!persistRecToggle.checked) {
+                clearTimeout(pressTimer);
+                if (isRecording) {
+                    stopRecording();
+                } else {
+                    captureAndDownload();
+                    setTimeout(() => launchConfettiBurst(), 500);
+                }
+            }
+        });
+        
+        // Enhanced screensaver toggle
+        paradeScreensaverToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                showStatus("🎉 PARADE FOREVER MODE ACTIVATED!");
+                // Convert existing media to persistent mode
+                document.querySelectorAll('.parade-media').forEach(convertToPersistentFloat);
+            } else {
+                showStatus("🛑 Parade Forever Mode OFF - Cleaning up...");
+                // Clear all media after a short delay
+                setTimeout(() => {
+                    paradeContainer.innerHTML = '';
+                    mediaCount = 0;
+                    updateMediaCounter();
+                }, 2000);
+            }
+        });
+
+        // Keyboard shortcuts for power users
+        document.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                case 'enter':
+                    e.preventDefault();
+                    if (!isRecording) {
+                        captureAndDownload();
+                        setTimeout(() => launchConfettiBurst(), 300);
+                    }
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    if (isRecording) {
+                        stopRecording();
+                    } else {
+                        startRecording();
+                    }
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    paradeScreensaverToggle.checked = !paradeScreensaverToggle.checked;
+                    paradeScreensaverToggle.dispatchEvent(new Event('change'));
+                    break;
+                case 'c':
+                    e.preventDefault();
+                    paradeContainer.innerHTML = '';
+                    mediaCount = 0;
+                    updateMediaCounter();
+                    showStatus("🧹 Parade cleared!");
+                    break;
+                case 'b':
+                    e.preventDefault();
+                    launchConfettiBurst();
+                    showStatus("💥 CONFETTI BURST!");
+                    break;
+            }
+        });
+
+        // Auto-launch celebration bursts periodically in screensaver mode
+        setInterval(() => {
+            if (paradeScreensaverToggle.checked && Math.random() < 0.3) {
+                launchConfettiBurst();
+            }
+        }, 10000);
+
+        // Collision detection and bouncing physics
+        function checkCollisions() {
+            const mediaElements = document.querySelectorAll('.parade-media');
+            mediaElements.forEach((element1, index1) => {
+                mediaElements.forEach((element2, index2) => {
+                    if (index1 !== index2) {
+                        const rect1 = element1.getBoundingClientRect();
+                        const rect2 = element2.getBoundingClientRect();
+                        
+                        if (rect1.left < rect2.right && 
+                            rect1.right > rect2.left && 
+                            rect1.top < rect2.bottom && 
+                            rect1.bottom > rect2.top) {
+                            // Collision detected - add bounce effect
+                            element1.style.transform += ' scale(1.1)';
+                            element2.style.transform += ' scale(1.1)';
+                            
+                            setTimeout(() => {
+                                element1.style.transform = element1.style.transform.replace(' scale(1.1)', '');
+                                element2.style.transform = element2.style.transform.replace(' scale(1.1)', '');
+                            }, 300);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Run collision detection periodically
+        setInterval(checkCollisions, 500);
+
+        // Enhanced flick gesture for media elements
+        function addFlickGesture(element) {
+            let startTime, startX, startY, endTime, endX, endY;
+            
+            element.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                startTime = Date.now();
+                startX = touch.clientX;
+                startY = touch.clientY;
+            });
+            
+            element.addEventListener('touchend', (e) => {
+                const touch = e.changedTouches[0];
+                endTime = Date.now();
+                endX = touch.clientX;
+                endY = touch.clientY;
+                
+                const duration = endTime - startTime;
+                const distanceX = endX - startX;
+                const distanceY = endY - startY;
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                
+                // Detect flick gesture (fast movement)
+                if (duration < 300 && distance > 50) {
+                    const velocity = distance / duration;
+                    if (velocity > 0.5) {
+                        // Apply flick momentum
+                        const angle = Math.atan2(distanceY, distanceX);
+                        const force = Math.min(velocity * 100, 500);
+                        
+                        element.style.transition = 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                        element.style.transform += ` translate(${Math.cos(angle) * force}px, ${Math.sin(angle) * force}px) rotate(${force / 10}deg)`;
+                        
+                        setTimeout(() => {
+                            element.style.transition = '';
+                        }, 800);
+                    }
+                }
+            });
+        }
+
+        // Apply flick gestures to all media
+        function enhanceMediaWithGestures() {
+            document.querySelectorAll('.parade-media').forEach(element => {
+                if (!element.hasAttribute('data-enhanced')) {
+                    addFlickGesture(element);
+                    element.setAttribute('data-enhanced', 'true');
+                }
+            });
+        }
+
+        // Continuously enhance new media elements
+        setInterval(enhanceMediaWithGestures, 1000);
+
+        // Performance optimization - limit max media count
+        function optimizePerformance() {
+            if (mediaCount > 50) {
+                const oldMedia = paradeContainer.children[0];
+                if (oldMedia) {
+                    oldMedia.remove();
+                    mediaCount--;
+                    updateMediaCounter();
+                }
+            }
+        }
+
+        // Monitor performance
+        setInterval(optimizePerformance, 2000);
+
+        // Add sparkle effect on media creation
+        function addSparkleEffect(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.innerHTML = '✨';
+            sparkle.style.position = 'absolute';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.fontSize = '24px';
+            sparkle.style.pointerEvents = 'none';
+            sparkle.style.zIndex = '1000';
+            sparkle.style.animation = 'sparkle 1s ease-out forwards';
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 1000);
+        }
+
+        // Add sparkle animation
+        const sparkleStyle = document.createElement('style');
+        sparkleStyle.textContent = `
+            @keyframes sparkle {
+                0% { transform: scale(0) rotate(0deg); opacity: 1; }
+                50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
+                100% { transform: scale(0) rotate(360deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(sparkleStyle);
+
+        // Enhanced media creation with sparkles
+        function createFloatingMediaWithSparkles(source, isVideo, delayMs = 0) {
+            createFloatingMedia(source, isVideo, delayMs);
+            
+            // Add sparkles at random positions
+            setTimeout(() => {
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * window.innerWidth;
+                        const y = Math.random() * window.innerHeight;
+                        addSparkleEffect(x, y);
+                    }, i * 100);
+                }
+            }, delayMs);
+        }
+
+        // Welcome message with instructions
+        function showWelcomeMessage() {
+            setTimeout(() => {
+                showStatus("🎊 Welcome to SnapFrame Parade! 🎊");
+                setTimeout(() => {
+                    showStatus("📸 Tap for photos, Hold for video!");
+                    setTimeout(() => {
+                        showStatus("🎉 Toggle Parade Forever for infinite fun!");
+                        setTimeout(() => {
+                            showStatus("⌨️ Shortcuts: Space=Photo, R=Record, P=Parade, C=Clear, B=Burst");
+                        }, 3000);
+                    }, 3000);
+                }, 3000);
+            }, 2000);
+        }
+
+        // Initialize the celebration
+        function initializeCelebration() {
+            showWelcomeMessage();
+            updateMediaCounter();
+            
+            // Add some initial sparkle
+            setTimeout(() => {
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * window.innerWidth;
+                        const y = Math.random() * window.innerHeight;
+                        addSparkleEffect(x, y);
+                    }, i * 200);
+                }
+            }, 1000);
+        }
+
+        // Start the celebration app
+        startCamera();
+        initializeCelebration();
+    </script>
+</body>
+</html>
