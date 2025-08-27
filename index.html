@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SnapFrame Parade - The Ultimate Festive Celebration</title>
+    <title>SnapFrame Parade - Ultimate Festive Celebration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
         /* Base app styling */
@@ -45,7 +45,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: contrast(1.1) saturate(1.2);
+            filter: contrast(1.15) saturate(1.3) brightness(1.05);
             transform: scale(1.05);
         }
 
@@ -168,17 +168,58 @@
                 transform: translate(calc(var(--float-x) + var(--drift-x)), calc(var(--float-y) + var(--drift-y))) rotate(calc(var(--float-r) + var(--drift-r))) scale(var(--float-scale));
             }
         }
+
+        @keyframes sparkle {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
         
         /* --- Controls & UI --- */
         #controls {
             position: absolute;
-            bottom: 30px;
+            bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: 15px;
+            gap: 10px;
             z-index: 10;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        #button-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        #camera-flip-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        #camera-flip-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        #camera-flip-button:active {
+            transform: scale(0.9);
         }
 
         #shutter-button {
@@ -214,6 +255,58 @@
             0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+        }
+
+        .toggle-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .toggle:before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #fff;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        input[type="checkbox"]:checked + .toggle {
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+        }
+
+        input[type="checkbox"]:checked + .toggle:before {
+            transform: translateX(20px);
+        }
+
+        input[type="checkbox"] {
+            display: none;
         }
 
         #status-message {
@@ -258,49 +351,6 @@
             transition: opacity 0.3s;
         }
 
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .toggle {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            transition: background-color 0.2s;
-            cursor: pointer;
-        }
-
-        .toggle:before {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: #fff;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.2s;
-        }
-
-        input[type="checkbox"]:checked + .toggle {
-            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
-        }
-
-        input[type="checkbox"]:checked + .toggle:before {
-            transform: translateX(20px);
-        }
-
-        input[type="checkbox"] {
-            display: none;
-        }
-
         #media-counter {
             position: absolute;
             top: 30px;
@@ -310,6 +360,29 @@
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .toggle-container {
+                font-size: 0.75rem;
+                gap: 6px;
+            }
+            
+            #controls {
+                bottom: 10px;
+                gap: 8px;
+            }
+            
+            #camera-flip-button {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+            
+            #shutter-button {
+                width: 70px;
+                height: 70px;
+            }
         }
     </style>
 </head>
@@ -324,16 +397,22 @@
             <div id="media-counter">Media: 0</div>
         </div>
         <div id="controls">
-            <button id="shutter-button" aria-label="Capture"></button>
-            <div class="toggle-container">
-                <label for="persist-rec-toggle">Persist Rec</label>
-                <input type="checkbox" id="persist-rec-toggle" />
-                <label for="persist-rec-toggle" class="toggle"></label>
+            <div id="button-row">
+                <button id="camera-flip-button" aria-label="Flip Camera">🔄</button>
+                <button id="shutter-button" aria-label="Capture"></button>
+                <div style="width: 50px;"></div> <!-- Spacer for centering -->
             </div>
-            <div class="toggle-container">
-                <label for="parade-screensaver-toggle">🎉 Parade Forever</label>
-                <input type="checkbox" id="parade-screensaver-toggle" />
-                <label for="parade-screensaver-toggle" class="toggle"></label>
+            <div class="toggle-row">
+                <div class="toggle-container">
+                    <label for="persist-rec-toggle">Persist Rec</label>
+                    <input type="checkbox" id="persist-rec-toggle" />
+                    <label for="persist-rec-toggle" class="toggle"></label>
+                </div>
+                <div class="toggle-container">
+                    <label for="parade-screensaver-toggle">🎉 Parade Forever</label>
+                    <input type="checkbox" id="parade-screensaver-toggle" />
+                    <label for="parade-screensaver-toggle" class="toggle"></label>
+                </div>
             </div>
         </div>
     </div>
@@ -341,6 +420,7 @@
     <script>
         const video = document.getElementById('camera-feed');
         const shutterButton = document.getElementById('shutter-button');
+        const cameraFlipButton = document.getElementById('camera-flip-button');
         const statusMessage = document.getElementById('status-message');
         const flashOverlay = document.getElementById('flash-overlay');
         const recordingTimer = document.getElementById('recording-timer');
@@ -358,6 +438,8 @@
         let mediaCount = 0;
         let draggedElement = null;
         let dragOffset = { x: 0, y: 0 };
+        let currentFacingMode = 'environment';
+        let currentStream = null;
 
         const longPressThreshold = 500;
 
@@ -389,17 +471,31 @@
         }
 
         // Start the camera feed with audio
-        async function startCamera() {
+        async function startCamera(facingMode = 'environment') {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment', width: 1920, height: 1080 }, 
+                // Stop existing stream if any
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+
+                const constraints = {
+                    video: { 
+                        facingMode: facingMode,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }, 
                     audio: true 
-                });
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                currentStream = stream;
+                currentFacingMode = facingMode;
+                
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     video.play();
                     applyEngineFilters();
-                    showStatus("🚀 SnapFrame Parade is LIVE!");
+                    showStatus(facingMode === 'user' ? "📱 Selfie Mode Ready!" : "🚀 SnapFrame Parade is LIVE!");
                 };
             } catch (err) {
                 console.error("Error accessing the camera: ", err);
@@ -407,16 +503,77 @@
             }
         }
 
+        // Camera flip functionality
+        function flipCamera() {
+            const newFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            cameraFlipButton.style.transform = 'rotateY(180deg)';
+            setTimeout(() => {
+                cameraFlipButton.style.transform = '';
+            }, 300);
+            
+            startCamera(newFacingMode);
+            showStatus(`📸 Switched to ${newFacingMode === 'user' ? 'Front' : 'Back'} Camera`);
+        }
+
+        // Add camera flip event listener
+        cameraFlipButton.addEventListener('click', flipCamera);
+        cameraFlipButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            flipCamera();
+        });
+
         // Enhanced floating media with multiple launch patterns
         function createFloatingMedia(source, isVideo, delayMs = 0) {
             setTimeout(() => {
                 const mediaElement = document.createElement(isVideo ? 'video' : 'img');
-                mediaElement.src = source;
+                
+                if (isVideo) {
+                    // Enhanced video handling
+                    mediaElement.src = source;
+                    mediaElement.muted = true;
+                    mediaElement.loop = true;
+                    mediaElement.playsinline = true;
+                    mediaElement.autoplay = true;
+                    mediaElement.controls = false;
+                    
+                    // Set video properties before adding to DOM
+                    mediaElement.addEventListener('loadeddata', () => {
+                        console.log('Video loaded and ready to play');
+                        mediaElement.play().catch(e => {
+                            console.log('Video autoplay prevented:', e);
+                            // Try to play without sound
+                            mediaElement.muted = true;
+                            mediaElement.play().catch(e2 => console.log('Video play failed completely:', e2));
+                        });
+                    });
+                    
+                    mediaElement.addEventListener('error', (e) => {
+                        console.error('Video error:', e);
+                        // Fallback: create a placeholder
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 200;
+                        canvas.height = 150;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(0, 0, 200, 150);
+                        ctx.fillStyle = '#fff';
+                        ctx.font = '16px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('🎬 Video', 100, 75);
+                        mediaElement.src = canvas.toDataURL();
+                    });
+                } else {
+                    mediaElement.src = source;
+                    mediaElement.addEventListener('error', () => {
+                        console.error('Image failed to load');
+                    });
+                }
+                
                 mediaElement.classList.add('parade-media');
                 
                 // Random sizes and properties
                 const randomSize = Math.floor(Math.random() * (300 - 100) + 100);
-                const aspectRatio = isVideo ? (video.videoHeight / video.videoWidth) : 1;
+                const aspectRatio = isVideo ? 0.75 : 1;
                 
                 mediaElement.style.width = `${randomSize}px`;
                 mediaElement.style.height = `${randomSize * aspectRatio}px`;
@@ -465,19 +622,11 @@
                 mediaElement.style.setProperty('--r-end', `${randomEndRotation}deg`);
 
                 // Apply direction-based animation
-                const duration = Math.random() * 5 + 8; // 8-13 seconds
+                const duration = Math.random() * 5 + 8;
                 mediaElement.style.animation = `confetti-${direction} ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`;
 
                 if (isVideo) {
-                    mediaElement.muted = true;
-                    mediaElement.loop = true;
-                    mediaElement.playsinline = true;
                     mediaElement.playbackRate = Math.random() * (1.8 - 0.6) + 0.6;
-                    
-                    // Load and play video
-                    mediaElement.addEventListener('loadeddata', () => {
-                        mediaElement.play().catch(e => console.log('Video play failed:', e));
-                    });
                     
                     // Click to toggle sound with visual feedback
                     mediaElement.addEventListener('click', (e) => {
@@ -529,7 +678,7 @@
             const floatX = Math.random() * (window.innerWidth - 200);
             const floatY = Math.random() * (window.innerHeight - 200);
             const floatR = Math.random() * 360;
-            const floatScale = Math.random() * 0.4 + 0.6; // 0.6-1.0
+            const floatScale = Math.random() * 0.4 + 0.6;
             
             const driftX = (Math.random() - 0.5) * 100;
             const driftY = (Math.random() - 0.5) * 100;
@@ -543,7 +692,7 @@
             mediaElement.style.setProperty('--drift-y', `${driftY}px`);
             mediaElement.style.setProperty('--drift-r', `${driftR}deg`);
             
-            const floatDuration = Math.random() * 10 + 15; // 15-25 seconds
+            const floatDuration = Math.random() * 10 + 15;
             mediaElement.style.animation = `float-persistent ${floatDuration}s ease-in-out infinite`;
         }
 
@@ -615,7 +764,7 @@
 
         // Launch confetti burst - multiple media at once
         function launchConfettiBurst() {
-            const burstCount = Math.floor(Math.random() * 3) + 2; // 2-4 items
+            const burstCount = Math.floor(Math.random() * 3) + 2;
             for (let i = 0; i < burstCount; i++) {
                 // Create dummy media for burst effect
                 const canvas = document.createElement('canvas');
@@ -626,7 +775,7 @@
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const imageDataURL = canvas.toDataURL('image/png');
                 
-                createFloatingMedia(imageDataURL, false, i * 200); // Stagger launches
+                createFloatingMedia(imageDataURL, false, i * 200);
             }
         }
 
@@ -654,48 +803,95 @@
 
         // Video recording functions with enhanced features
         function startRecording() {
-            if (isRecording) return;
+            if (isRecording || !currentStream) return;
             isRecording = true;
             shutterButton.classList.add('recording');
             recordedChunks = [];
-            const stream = video.srcObject;
-            mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'video/webm;codecs=vp9',
-                videoBitsPerSecond: 8000000
-            });
             
-            mediaRecorder.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
+            try {
+                const options = {
+                    videoBitsPerSecond: 8000000
+                };
+                
+                // Try different mimeTypes for better compatibility
+                if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+                    options.mimeType = 'video/webm;codecs=vp9';
+                } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+                    options.mimeType = 'video/webm;codecs=vp8';
+                } else if (MediaRecorder.isTypeSupported('video/webm')) {
+                    options.mimeType = 'video/webm';
+                } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+                    options.mimeType = 'video/mp4';
                 }
-            };
-            
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `snapframe_parade_${Date.now()}.webm`;
-                document.body.appendChild(a);
-                a.click();
                 
-                // 5 second delay for video launch
-                showStatus("🎬 Video launching in 5 seconds...");
-                setTimeout(() => {
-                    createFloatingMedia(url, true);
-                    showStatus("🚀 VIDEO LAUNCHED!");
-                }, 5000);
+                mediaRecorder = new MediaRecorder(currentStream, options);
                 
-                window.URL.revokeObjectURL(url);
-            };
-            
-            mediaRecorder.start();
-            showStatus("🔴 RECORDING PARADE!");
-            
-            startTime = Date.now();
-            recordingTimer.style.opacity = 1;
-            timerInterval = setInterval(updateTimer, 1000);
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    try {
+                        const mimeType = mediaRecorder.mimeType || 'video/webm';
+                        const blob = new Blob(recordedChunks, { type: mimeType });
+                        
+                        if (blob.size === 0) {
+                            showStatus("❌ Recording failed - no data captured");
+                            return;
+                        }
+                        
+                        const url = URL.createObjectURL(blob);
+                        
+                        // Create download link
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+                        a.download = `snapframe_parade_${Date.now()}.${extension}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        
+                        // 5 second delay for video launch with countdown
+                        showStatus("🎬 Video launching in 5 seconds...");
+                        let countdown = 5;
+                        const countdownInterval = setInterval(() => {
+                            countdown--;
+                            if (countdown > 0) {
+                                showStatus(`🎬 Video launching in ${countdown} seconds...`);
+                            } else {
+                                clearInterval(countdownInterval);
+                                createFloatingMedia(url, true);
+                                showStatus("🚀 VIDEO LAUNCHED!");
+                                
+                                // Clean up URL after some time
+                                setTimeout(() => {
+                                    URL.revokeObjectURL(url);
+                                }, 60000);
+                            }
+                        }, 1000);
+                        
+                    } catch (error) {
+                        console.error('Error processing recording:', error);
+                        showStatus("❌ Error processing video");
+                    }
+                };
+                
+                mediaRecorder.start();
+                showStatus("🔴 RECORDING PARADE!");
+                
+                startTime = Date.now();
+                recordingTimer.style.opacity = 1;
+                timerInterval = setInterval(updateTimer, 1000);
+                
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                showStatus("❌ Recording not supported");
+                isRecording = false;
+                shutterButton.classList.remove('recording');
+            }
         }
 
         function stopRecording() {
@@ -833,6 +1029,10 @@
                     launchConfettiBurst();
                     showStatus("💥 CONFETTI BURST!");
                     break;
+                case 'f':
+                    e.preventDefault();
+                    flipCamera();
+                    break;
             }
         });
 
@@ -959,17 +1159,6 @@
             setTimeout(() => sparkle.remove(), 1000);
         }
 
-        // Add sparkle animation
-        const sparkleStyle = document.createElement('style');
-        sparkleStyle.textContent = `
-            @keyframes sparkle {
-                0% { transform: scale(0) rotate(0deg); opacity: 1; }
-                50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
-                100% { transform: scale(0) rotate(360deg); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(sparkleStyle);
-
         // Enhanced media creation with sparkles
         function createFloatingMediaWithSparkles(source, isVideo, delayMs = 0) {
             createFloatingMedia(source, isVideo, delayMs);
@@ -991,11 +1180,11 @@
             setTimeout(() => {
                 showStatus("🎊 Welcome to SnapFrame Parade! 🎊");
                 setTimeout(() => {
-                    showStatus("📸 Tap for photos, Hold for video!");
+                    showStatus("📸 Tap for photos, Hold for video! 🔄 Flip for selfies!");
                     setTimeout(() => {
                         showStatus("🎉 Toggle Parade Forever for infinite fun!");
                         setTimeout(() => {
-                            showStatus("⌨️ Shortcuts: Space=Photo, R=Record, P=Parade, C=Clear, B=Burst");
+                            showStatus("⌨️ Shortcuts: Space=Photo, R=Record, P=Parade, C=Clear, B=Burst, F=Flip");
                         }, 3000);
                     }, 3000);
                 }, 3000);
